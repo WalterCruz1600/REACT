@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>React Comments App</title>
+  <!-- React -->
+  <script src="https://unpkg.com/react@18/umd/react.development.js" crossorigin></script>
+  <!-- ReactDOM -->
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js" crossorigin></script>
+  <!-- Babel para procesar JSX -->
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+</head>
+<body>
+  <!-- Punto de montaje de React -->
+  <div id="root"></div>
+
+  <script type="text/babel">
+    // Componente de bienvenida
+    function Greeting() {
+      return <h1>¡Hola, bienvenido a React!</h1>;
+    }
+
+    // Componente hijo: formulario de comentarios
+    function CommentForm({ onAddComment }) {
+      const [comment, setComment] = React.useState('');
+
+      function handleSubmit(e) {
+        e.preventDefault();
+        if (comment.trim() === '') return;
+        onAddComment(comment);
+        setComment('');
+      }
+
+      return (
+        <form onSubmit={handleSubmit}>
+          <input
+            type="text"
+            value={comment}
+            onChange={e => setComment(e.target.value)}
+            placeholder="Escribe tu comentario"
+          />
+          <button type="submit">Enviar comentario</button>
+        </form>
+      );
+    }
+
+    // Componente padre: gestiona y persiste lista de comentarios
+    function App() {
+      // Cargar comentarios desde localStorage inicialmente
+      const [comments, setComments] = React.useState(() => {
+        const saved = localStorage.getItem('comments');
+        return saved ? JSON.parse(saved) : [];
+      });
+
+      // Guardar comentarios en localStorage cada vez que cambian
+      React.useEffect(() => {
+        localStorage.setItem('comments', JSON.stringify(comments));
+      }, [comments]);
+
+      function addComment(newComment) {
+        setComments(prev => [...prev, newComment]);
+      }
+
+      return (
+        <div>
+          <Greeting />
+          <CommentForm onAddComment={addComment} />
+          <ul>
+            {comments.map((cmt, idx) => (
+              <li key={idx}>{cmt}</li>
+            ))}
+          </ul>
+        </div>
+      );
+    }
+
+    // Renderizamos la App dentro del div#root
+    const root = ReactDOM.createRoot(document.getElementById('root'));
+    root.render(<App />);
+  </script>
+</body>
+</html>
