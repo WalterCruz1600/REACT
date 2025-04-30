@@ -4,81 +4,197 @@
   <meta charset="UTF-8">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>React Comments App</title>
-  <!-- React -->
+  <title>App de Comentarios</title>
+  <!-- React y Babel CDN -->
   <script src="https://unpkg.com/react@18/umd/react.development.js" crossorigin></script>
-  <!-- ReactDOM -->
   <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js" crossorigin></script>
-  <!-- Babel para procesar JSX -->
   <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+  <!-- Estilos principales revisados -->
+  <style>
+    /* Variables de tema */
+    :root {
+      --primary: #1abc9c;
+      --primary-dark: #16a085;
+      --bg: #ecf0f1;
+      --card-bg: #ffffff;
+      --text-dark: #2c3e50;
+    }
+    /* Reset y cuerpo */
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: var(--bg);
+      color: var(--text-dark);
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      min-height: 100vh;
+      padding: 20px;
+    }
+    /* Contenedor principal */
+    .app-content {
+      background: var(--card-bg);
+      border-radius: 10px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      width: 100%;
+      max-width: 640px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+    /* Encabezado con gradiente */
+    .app-header {
+      background: linear-gradient(90deg, var(--primary), var(--primary-dark));
+      color: #fff;
+      padding: 18px;
+      text-align: center;
+    }
+    .app-header h1 {
+      font-size: 26px;
+      letter-spacing: 1px;
+    }
+    /* Área principal con padding */
+    .app-main {
+      padding: 24px;
+      background: var(--bg);
+    }
+    /* Formulario estilizado */
+    form {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 12px;
+      margin-bottom: 24px;
+      background: var(--card-bg);
+      padding: 16px;
+      border-radius: 8px;
+      border: 1px solid rgba(0,0,0,0.05);
+    }
+    form input {
+      padding: 10px;
+      border: 1px solid rgba(0,0,0,0.2);
+      border-radius: 6px;
+      font-size: 15px;
+      transition: border-color 0.2s;
+    }
+    form input:focus {
+      border-color: var(--primary);
+      outline: none;
+    }
+    form button {
+      background: var(--primary);
+      color: #fff;
+      border: none;
+      padding: 10px 16px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 15px;
+      transition: background 0.2s, transform 0.1s;
+    }
+    form button:hover {
+      background: var(--primary-dark);
+    }
+    form button:active {
+      transform: scale(0.98);
+    }
+    /* Lista de comentarios como tarjetas */
+    .comment-list {
+      display: grid;
+      grid-gap: 16px;
+    }
+    .comment-item {
+      background: var(--card-bg);
+      padding: 14px 16px;
+      border-radius: 6px;
+      border-left: 4px solid var(--primary);
+      box-shadow: 0 1px 4px rgba(0,0,0,0.07);
+      transition: box-shadow 0.2s, transform 0.2s;
+    }
+    .comment-item:hover {
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+      transform: translateY(-2px);
+    }
+    /* Pie de página discreto */
+    .app-footer {
+      text-align: center;
+      padding: 12px 0;
+      font-size: 13px;
+      background: var(--card-bg);
+      color: rgba(0,0,0,0.6);
+    }
+  </style>
 </head>
 <body>
   <!-- Punto de montaje de React -->
-  <div id="root"></div>
+  <div id="root" class="app-content"></div>
 
+  <!-- Aplicación en JSX -->
   <script type="text/babel">
-    // Componente de bienvenida
-    function Greeting() {
-      return <h1>¡Hola, bienvenido a React!</h1>;
-    }
+    // Header moderno con título
+    const Greeting = () => (
+      <header className="app-header">
+        <h1>Sección de Comentarios</h1>
+      </header>
+    );
 
-    // Componente hijo: formulario de comentarios
-    function CommentForm({ onAddComment }) {
-      const [comment, setComment] = React.useState('');
-
-      function handleSubmit(e) {
+    // Formulario con callback al padre
+    const CommentForm = ({ onAddComment }) => {
+      const [text, setText] = React.useState('');
+      const handleSubmit = e => {
         e.preventDefault();
-        if (comment.trim() === '') return;
-        onAddComment(comment);
-        setComment('');
-      }
-
+        const trimmed = text.trim();
+        if (!trimmed) return;
+        onAddComment(trimmed);
+        setText('');
+      };
       return (
         <form onSubmit={handleSubmit}>
           <input
             type="text"
-            value={comment}
-            onChange={e => setComment(e.target.value)}
-            placeholder="Escribe tu comentario"
+            value={text}
+            onChange={e => setText(e.target.value)}
+            placeholder="Escribe tu comentario..."
           />
-          <button type="submit">Enviar comentario</button>
+          <button type="submit">Enviar</button>
         </form>
       );
-    }
+    };
 
-    // Componente padre: gestiona y persiste lista de comentarios
-    function App() {
-      // Cargar comentarios desde localStorage inicialmente
+    // Lista de comentarios en tarjetas
+    const CommentList = ({ items }) => (
+      <section className="comment-list">
+        {items.map((item, i) => (
+          <div key={i} className="comment-item">{item}</div>
+        ))}
+      </section>
+    );
+
+    // Componente principal con estado y persistencia
+    const App = () => {
       const [comments, setComments] = React.useState(() => {
         const saved = localStorage.getItem('comments');
         return saved ? JSON.parse(saved) : [];
       });
-
-      // Guardar comentarios en localStorage cada vez que cambian
       React.useEffect(() => {
         localStorage.setItem('comments', JSON.stringify(comments));
       }, [comments]);
-
-      function addComment(newComment) {
-        setComments(prev => [...prev, newComment]);
-      }
-
+      const addComment = note => setComments(prev => [...prev, note]);
       return (
-        <div>
+        <>
           <Greeting />
-          <CommentForm onAddComment={addComment} />
-          <ul>
-            {comments.map((cmt, idx) => (
-              <li key={idx}>{cmt}</li>
-            ))}
-          </ul>
-        </div>
+          <main className="app-main">
+            <CommentForm onAddComment={addComment} />
+            <CommentList items={comments} />
+          </main>
+          <footer className="app-footer">
+            © 2025 AppComentarios
+          </footer>
+        </>
       );
-    }
+    };
 
-    // Renderizamos la App dentro del div#root
-    const root = ReactDOM.createRoot(document.getElementById('root'));
-    root.render(<App />);
+    // Renderizamos la aplicación
+    ReactDOM.createRoot(document.getElementById('root')).render(<App />);
   </script>
 </body>
 </html>
